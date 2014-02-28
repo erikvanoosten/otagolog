@@ -19,6 +19,7 @@ package nl.grons.otagolog.shared.config
 import java.io.{FileInputStream, File}
 import java.util.Properties
 import scala.Function.unlift
+import scala.sys.SystemProperties
 import java.net.InetSocketAddress
 import nl.grons.otagolog.shared.util.InetSocketAddressParser
 import nl.grons.otagolog.shared.OtagoLog
