@@ -92,6 +92,8 @@ class MapConfiguration(map: Map[String, String]) extends Configuration {
   override def getStringProperty(name: String) = map.get(name)
 }
 
+object SystemConfiguration extends MapConfiguration(new SystemProperties())
+
 class InlineConfiguration(valuePairs: (String, String)*) extends MapConfiguration(valuePairs.toMap)
 
 class PropertiesConfiguration(props: Properties) extends Configuration {
