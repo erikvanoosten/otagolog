@@ -25,8 +25,8 @@ import io.netty.channel.ChannelHandlerContext
 import nl.grons.otagolog.server.events._
 import java.nio.charset.Charset
 import java.util.concurrent.{Executor, Executors}
-import com.lmax.disruptor.dsl.Disruptor
-import com.lmax.disruptor.{EventHandler, EventTranslatorTwoArg, EventTranslatorOneArg}
+import com.lmax.disruptor.dsl.{ProducerType, Disruptor}
+import com.lmax.disruptor._
 
 /**
  *
@@ -66,10 +66,10 @@ object OtagologServer {
     val factory = new NetworkEventFactory[String]()
 
     // Specify the size of the ring buffer, must be power of 2.
-    val bufferSize = 1024
+    val bufferSize = 1024 * 32
 
     // Construct the Disruptor
-    val disruptor = new Disruptor[NetworkEvent[String]](factory, bufferSize, executor)
+    val disruptor = new Disruptor[NetworkEvent[String]](factory, bufferSize, executor, ProducerType.SINGLE, new BusySpinWaitStrategy())
 
     disruptor.handleEventsWith(new ParserEventHandler(parser)).`then`(logger, new ReleaseEventHandler())
 
@@ -96,8 +96,10 @@ object OtagologServer {
     val server = new NettyTcpServer(ServerConfig(configuration), nettyToDisruptor)
     Await.ready(server.start(), 30.seconds)
 
-    Thread.sleep(30.seconds.toMillis)
-//    Thread.sleep(1.minute.toMillis)
+//    Thread.sleep(30.seconds.toMillis)
+    Thread.sleep(2.minute.toMillis)
     Await.ready(server.shutdown(), 30.seconds)
+
+    disruptor.halt()
   }
 }
