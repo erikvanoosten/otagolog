@@ -21,6 +21,7 @@ resolvers ++= Seq(
 libraryDependencies ++= Seq(
   "io.netty" % "netty-all" % "4.0.15.Final",
   "com.lmax" % "disruptor" % "3.2.0",
+  "nl.grons" %% "metrics-scala" % "3.0.4",
   // "net.openhft" % "chronicle" % "2.0.1",
   // "com.yammer.metrics" % "metrics-core" % "3.0.0",
   // Logging
