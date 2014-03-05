@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package nl.grons.otagolog.shared
+package nl.grons.otagolog.shared.config
 
 /**
+ * Default configurations.
  *
+ * TODO: move all default values to here...
  */
-object OtagoLog {
+object ConfigurationDefaults {
 
   val DefaultServerPort = 8375
 

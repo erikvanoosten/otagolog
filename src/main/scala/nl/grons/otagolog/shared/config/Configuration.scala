@@ -19,7 +19,6 @@ package nl.grons.otagolog.shared.config
 import java.io.{InputStreamReader, FileInputStream, File}
 import java.net.InetSocketAddress
 import java.nio.charset.Charset
-import nl.grons.otagolog.shared.OtagoLog
 import java.util.Properties
 import scala.Function.unlift
 
@@ -150,7 +149,7 @@ object Converter {
     }
   }
   implicit object String2InetSocketAddress extends Converter[String, InetSocketAddress] {
-    def convert(a: String) = InetSocketAddressParser(a, OtagoLog.DefaultServerPort)
+    def convert(a: String) = InetSocketAddressParser(a, ConfigurationDefaults.DefaultServerPort)
   }
   implicit object String2File extends Converter[String, File] { def convert(a: String) = new File(a) }
 }

@@ -19,10 +19,9 @@ package nl.grons.otagolog.server.config
 import io.netty.channel.ChannelPipeline
 import java.io.File
 import javax.net.ssl.TrustManager
-import nl.grons.otagolog.shared.config.Configuration
+import nl.grons.otagolog.shared.config.{ConfigurationDefaults, Configuration}
 import nl.grons.otagolog.server.config
 import java.net.InetSocketAddress
-import nl.grons.otagolog.shared.OtagoLog.DefaultServerPort
 
 object ServerConfig {
   def apply(conf: Configuration): ServerConfig = {
@@ -49,7 +48,7 @@ object ServerConfig {
   def tlsConfigFrom(conf: Configuration): TlsConfig = {
     val prefixedConf = conf.withPrefix("otagolog.server.net.tls.")
     val withTls = prefixedConf.getProperty("on", false)
-    val keystoreFileOpt = prefixedConf.getProperty[File]("keystoreFile")
+    val keystoreFileOpt = prefixedConf.getProperty[File]("keyStoreFile")
     (withTls, keystoreFileOpt) match {
       case (false, _) => NoTlsConfig
       case (true, None) => DefaultTlsConfig
@@ -57,7 +56,7 @@ object ServerConfig {
         val defaults = CustomTlsConfig(null, null, null)
         config.CustomTlsConfig(
           keystoreFile,
-          prefixedConf.getRequiredProperty[String]("keystorePassword"),
+          prefixedConf.getRequiredProperty[String]("keyStorePassword"),
           prefixedConf.getRequiredProperty[String]("keyManagerPassword"),
           prefixedConf.getProperty("keyManagerFactoryAlgorithm", defaults.keyManagerFactoryAlgorithm),
           prefixedConf.getProperty("trustManagerFactoryAlgorithm", defaults.trustManagerFactoryAlgorithm),
@@ -71,7 +70,7 @@ object ServerConfig {
 case class ServerConfig(
   serverSocketConfig: ServerSocketConfig,
   tlsConfig: TlsConfig,
-  listenAddress: InetSocketAddress = new InetSocketAddress(DefaultServerPort),
+  listenAddress: InetSocketAddress = new InetSocketAddress(ConfigurationDefaults.DefaultServerPort),
   selectThreadCount: Int = 1,
   ioThreadCount: Int = 1
 )
@@ -110,8 +109,8 @@ abstract class TlsConfig
 case object NoTlsConfig extends TlsConfig
 case object DefaultTlsConfig extends TlsConfig
 case class CustomTlsConfig(
-  keystoreFile: File,
-  keystorePassword: String,
+  keyStoreFile: File,
+  keyStorePassword: String,
   keyManagerPassword: String,
   keyManagerFactoryAlgorithm: String = "SunX509",
   trustManagerFactoryAlgorithm: String = "SunX509",

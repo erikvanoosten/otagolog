@@ -28,6 +28,7 @@ trait Parser[P <: AnyRef] {
  */
 class ParserEventHandler[P <: AnyRef](parser: Parser[P]) extends EventHandler[NetworkEvent[P]] {
   override def onEvent(event: NetworkEvent[P], sequence: Long, endOfBatch: Boolean) = {
+    // TODO: add exception handling
     event.parsed = parser.parse(event.frame)
   }
 }
