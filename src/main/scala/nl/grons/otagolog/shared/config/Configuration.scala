@@ -19,6 +19,7 @@ package nl.grons.otagolog.shared.config
 import java.io.{FileInputStream, File}
 import java.util.Properties
 import scala.Function.unlift
+import scala.sys.SystemProperties
 import java.net.InetSocketAddress
 import nl.grons.otagolog.shared.util.InetSocketAddressParser
 import nl.grons.otagolog.shared.OtagoLog
@@ -91,6 +92,8 @@ class ChainedConfiguration(confs: Configuration*) extends Configuration {
 class MapConfiguration(map: Map[String, String]) extends Configuration {
   override def getStringProperty(name: String) = map.get(name)
 }
+
+object SystemConfiguration extends MapConfiguration(new SystemProperties())
 
 class InlineConfiguration(valuePairs: (String, String)*) extends MapConfiguration(valuePairs.toMap)
 
