@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package nl.grons.otagolog.shared.util
+package nl.grons.otagolog.shared.config
 
 import java.net.InetSocketAddress
 

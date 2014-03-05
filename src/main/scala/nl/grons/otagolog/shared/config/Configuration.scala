@@ -16,19 +16,22 @@
 
 package nl.grons.otagolog.shared.config
 
-import java.io.{FileInputStream, File}
+import java.io.{InputStreamReader, FileInputStream, File}
+import java.net.InetSocketAddress
+import java.nio.charset.Charset
+import nl.grons.otagolog.shared.OtagoLog
 import java.util.Properties
 import scala.Function.unlift
-import scala.sys.SystemProperties
-import java.net.InetSocketAddress
-import nl.grons.otagolog.shared.util.InetSocketAddressParser
-import nl.grons.otagolog.shared.OtagoLog
 
 /**
  * A very simple String based configuration with properties that can be converted with a [[Converter]] type class.
+ * More converters can be
  *
- * Implementation include: [[InlineConfiguration]], [[PropertiesConfiguration]], [[MapConfiguration]].
+ * Implementation include: [[InlineConfiguration]], [[PropertiesConfiguration]], [[SystemConfiguration]] and
+ * [[MapConfiguration]].
  * Configurations can be composed with [[.fallbackTo]] or by constructing a [[ChainedConfiguration]].
+ *
+ * Custom implementation only need to implement [[.getStringProperty]].
  */
 trait Configuration {
   /**
@@ -56,7 +59,8 @@ trait Configuration {
    * @throws IllegalArgumentException in case the property is not present, or can not be converted
    */
   def getRequiredProperty[A](name: String)(implicit converter: Converter[String, A]): A =
-    getStringProperty(name).map(converter.convert).getOrElse(throw new IllegalArgumentException(s"option ${unwrap(name)} is required"))
+    getStringProperty(name).map(converter.convert).getOrElse(
+      throw new IllegalArgumentException(s"Property '${unwrap(name)}' is required but no value is configured"))
 
   /**
    * @return a new configuration which queries another configuration in case a property is not present
@@ -75,7 +79,14 @@ trait Configuration {
     }
   }
 
-  // NOTE: be careful not to return `Some(null)`
+  /**
+   * Finds the string value in the properties source.
+   *
+   * @param name name of the property
+   * @return the value of the property wrapped in a `Some`, or None` when this configuration does not contain a value
+   *         for the given property.
+   *         NOTE: avoid returning `Some(null)`.
+   */
   protected[config] def getStringProperty(name: String): Option[String]
 
   protected[config] def unwrap(name: String) = name
@@ -93,7 +104,9 @@ class MapConfiguration(map: Map[String, String]) extends Configuration {
   override def getStringProperty(name: String) = map.get(name)
 }
 
-object SystemConfiguration extends MapConfiguration(new SystemProperties())
+object SystemConfiguration extends Configuration {
+  override def getStringProperty(name: String) = Option(System.getProperty(name))
+}
 
 class InlineConfiguration(valuePairs: (String, String)*) extends MapConfiguration(valuePairs.toMap)
 
@@ -101,18 +114,26 @@ class PropertiesConfiguration(props: Properties) extends Configuration {
   def getStringProperty(name: String): Option[String] = Option(props.getProperty(name))
 }
 
-class PropertiesFileConfiguration(propsFile: File)
-  extends PropertiesConfiguration(PropertiesFileConfiguration.propsReader(propsFile))
+class PropertiesFileConfiguration(propsFile: File, charset: Charset = PropertiesFileConfiguration.Iso8859_1)
+  extends PropertiesConfiguration(PropertiesFileConfiguration.propsReader(propsFile, charset))
 
-private object PropertiesFileConfiguration {
-  def propsReader(f: File): Properties = {
+object PropertiesFileConfiguration {
+  val Iso8859_1 = Charset.forName("ISO-8859-1")
+  private def propsReader(f: File, charset: Charset): Properties = {
     val p = new Properties()
-    p.load(new FileInputStream(f))
+    p.load(new InputStreamReader(new FileInputStream(f), charset))
     p
   }
 }
 
 trait Converter[A,B] {
+  /**
+   * Converts a value from one type to another.
+   *
+   * @param a input
+   * @return output
+   * @throws IllegalArgumentException when `a` can not be converted
+   */
   def convert(a: A): B
 }
 

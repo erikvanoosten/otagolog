@@ -1,4 +1,4 @@
-package nl.grons.otagolog.shared.util
+package nl.grons.otagolog.shared.config
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
